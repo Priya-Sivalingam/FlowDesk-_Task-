@@ -4,6 +4,8 @@ A backend REST API service powering the FlowDesk Task Board — a smart workspac
 
 ## Features
 
+- JWT-based authentication with role support (Admin / Member)
+- Auto-generated Employee IDs in format `FD-YYYY-XXXX`
 - Project management with member roles (ProjectManager / TeamLead / Member)
 - Task creation, assignment, priority, and due date management
 - Task workflow: ToDo → InProgress → Done / Cancelled
