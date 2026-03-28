@@ -8,3 +8,9 @@ appsettings.Development.json
 
 # Logs
 Logs
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+publish/
