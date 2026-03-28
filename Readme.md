@@ -42,7 +42,7 @@ A backend REST API service powering the FlowDesk Task Board — a smart workspac
 
 ```bash
 git clone https://github.com/Priya-Sivalingam/FlowDesk-_Task-
-cd FlowDesk.Api
+cd FlowDesk-_Task-
 ```
 
 ### 2. Configure the Database
@@ -52,22 +52,14 @@ Create `appsettings.json` and fill in your PostgreSQL details:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=flowdesk;Username=postgres;Password=yourpassword"
+    "DefaultConnection": "Host=YOUR_HOST;Port=YOUR_PORT;Database=flowdesk;Username=YOUR_USER;Password=YOUR_PASSWORD"
   },
   "Jwt": {
-    "Key": "your-super-secret-key-minimum-32-characters",
+    "Key": "your-secret-key-minimum-32-characters",
     "Issuer": "FlowDesk",
     "Audience": "FlowDeskUsers",
     "ExpiryHours": 8
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning",
-      "Microsoft.EntityFrameworkCore": "Warning"
-    }
-  },
-  "AllowedHosts": "*"
+  }
 }
 ```
 
@@ -95,3 +87,32 @@ dotnet run
 
 ```
 http://localhost:5287/swagger
+
+## Postman Collection
+
+Import both files into Postman to explore the API:
+
+- `FlowDesk.postman_collection.json` — all endpoints
+- `FlowDesk.postman_environment.json` — environment variables
+
+
+
+## Design Decisions
+
+**Repository Pattern**
+Separates data access from business logic. Makes the codebase testable and allows swapping the database without touching services or controllers.
+
+**Global Exception Middleware**
+Centralised error handling maps typed exceptions to HTTP status codes consistently across the entire API surface, removing try/catch from every controller.
+
+**DTOs over Entities**
+Entities are never exposed directly. DTOs control exactly what data enters and leaves the API — preventing over-posting and hiding sensitive fields like `PasswordHash`.
+
+**FluentValidation**
+Validation rules are defined in dedicated validator classes rather than data annotations, keeping entities clean and making rules easy to test independently.
+
+**Typed Exceptions**
+Services throw specific exception types (`KeyNotFoundException`, `ArgumentException`, `InvalidOperationException`) which the middleware maps to the correct HTTP status codes automatically.
+
+**BCrypt Password Hashing**
+Passwords are never stored in plain text. BCrypt adds a salt automatically and is resistant to brute-force attacks.
