@@ -1,0 +1,10 @@
+# Build outputs
+bin/
+obj/
+
+# Environment & secrets
+appsettings.Development.json
+.env
+
+# Logs
+Logs
