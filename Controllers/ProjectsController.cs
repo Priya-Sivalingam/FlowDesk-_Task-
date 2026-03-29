@@ -10,6 +10,7 @@ namespace FlowDesk.Api.Controllers;
 [ApiController]
 [Route("api/projects")]
 [Authorize]
+
 public class ProjectsController : ControllerBase
 {
     private readonly IProjectService _projectService;
