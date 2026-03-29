@@ -11,11 +11,21 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Serilog
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.Console()
+    .WriteTo.File(
+        path: "Logs/flowdesk-.log",
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 7)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -36,6 +46,20 @@ builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173",
+            "https://flowdesk-client.vercel.app"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 // JWT Auth
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -53,20 +77,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddAuthorization();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .WriteTo.Console()
-    .WriteTo.File(
-        path: "Logs/flowdesk-.log",
-        rollingInterval: RollingInterval.Day,      // new file every day
-        retainedFileCountLimit: 7                  // keep last 7 days only
-    )
-    .CreateLogger();
-
-builder.Host.UseSerilog();
 
 // Swagger with JWT support
 builder.Services.AddSwaggerGen(options =>
@@ -106,12 +120,18 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// Global exception handler — must be first
-app.UseMiddleware<ExceptionMiddleware>();
-
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseRouting();
+
+app.UseCors("AllowFrontend");
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<ExceptionMiddleware>();
+
 app.MapControllers();
+
 app.Run();
